@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KFC Inventory Management System</title>
+    <style>
+        /* KFC Branding Palette */
+        :root {
+            --kfc-red-dark: #A00000;
+            --kfc-red-light: #E51A1A;
+            --kfc-dark: #333333;
+            --kfc-light: #F8F8F8;
+            --kfc-accent-blue: #3498db; /* Used for non-KFC primary info like link hover/active */
+            --kfc-white: #FFFFFF;
+        }
+
+        /* Base Styling */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--kfc-light); 
+            color: var(--kfc-dark);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            background-color: var(--kfc-white);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- HEADER & LOGO --- */
+        .header-brand {
+            background-color: var(--kfc-red-dark);
+            padding: 15px 0;
+            margin: -30px -30px 20px -30px; 
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-brand h1 {
+            color: var(--kfc-white);
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            margin: 0;
+            padding: 0 30px;
+            flex-grow: 1;
+            text-align: center;
+        }
+        
+        /* Hamburger Menu Icon (Mobile Only) */
+        .menu-icon {
+            display: none; /* Hidden by default */
+            cursor: pointer;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background-color: var(--kfc-white);
+            margin: 5px 0;
+            transition: 0.4s;
+            border-radius: 2px;
+        }
+
+        /* --- NAVIGATION --- */
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--kfc-dark); 
+            padding: 10px 0;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+            margin: 2px;
+        }
+
+        .navbar a:hover {
+            background-color: var(--kfc-red-dark); 
+            color: white;
+        }
+        
+        .navbar a.active {
+            background-color: var(--kfc-red-light); 
+            color: white;
+        }
+        
+        h2 {
+            color: var(--kfc-red-dark);
+            border-bottom: 2px solid var(--kfc-red-light);
+            padding-bottom: 8px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+        }
+
+        /* --- HEADER & DOWNLOAD BUTTON GROUPING --- */
+        .header-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Allows stacking on small screens/tablets */
+            margin-bottom: 20px;
+        }
+
+        .header-with-button h2 {
+            /* Keep KFC style, but remove default bottom margin/border to manage it in the parent */
+            margin-top: 0;
+            margin-bottom: 0;
+            border-bottom: none; 
+            padding-bottom: 0;
+            flex-grow: 1;
+        }
+        
+        /* View Container Hide/Show */
+        .view {
+            display: none; 
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: var(--kfc-white);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .view.active {
+            display: block;
+        }
+
+        /* Forms */
+        .section-form {
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px; 
+            align-items: flex-start;
+            border: 1px dashed #ddd;
+            border-radius: 6px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 200px;
+        }
+        
+        .form-group.search-input {
+            flex: 2 1 280px; 
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--kfc-dark);
+        }
+        
+        /* Dynamic Stock Display */
+        .product-details {
+            margin-top: 5px;
+            font-size: 1.1em;
+            color: var(--kfc-red-dark);
+            font-weight: bold;
+        }
+        .product-details span {
+            color: var(--kfc-accent-blue);
+        }
+
+        input[type="number"], input[type="text"], input[type="date"], select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%; 
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        
+        /* FOCUS STYLE FOR PROFESSIONAL INPUT LOOK */
+        input:focus, select:focus {
+            border-color: var(--kfc-red-light); 
+            box-shadow: 0 0 5px rgba(229, 26, 26, 0.5); 
+            outline: none;
+        }
+
+        /* Buttons (Styles updated for color/shadow) */
+        button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Added subtle shadow */
+        }
+        
+        .section-form button {
+            align-self: flex-end; 
+            flex: 0 0 auto;
+            margin-bottom: 1px;
+        }
+
+        /* Button Colors */
+        .btn-add {
+            background-color: var(--kfc-red-dark); 
+        }
+        .btn-add:hover {
+            background-color: var(--kfc-red-light);
+        }
+        
+        .btn-primary {
+            background-color: #006400; /* Deep Hunter Green */
+        }
+        .btn-primary:hover {
+            background-color: #004d00;
+        }
+        
+        .btn-update {
+            background-color: var(--kfc-red-light); 
+        }
+        .btn-update:hover {
+            background-color: var(--kfc-red-dark);
+        }
+        
+        .btn-download {
+            background-color: #444444; /* Dark Gray/Black */
+            margin-left: 15px; 
+            flex-shrink: 0; /* Prevents button from shrinking unexpectedly */
+        }
+        .btn-download:hover {
+            background-color: var(--kfc-dark);
+        }
+        
+        /* Table Styles (Unchanged for visual consistency) */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        th {
+            background-color: var(--kfc-red-dark);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        /* Container for making tables scrollable on small screens */
+        .table-responsive-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 0; /* Full width on mobile */
+                border-radius: 0;
+                box-shadow: none;
+            }
+            
+            /* Header adjustments for mobile */
+            .header-brand {
+                margin: 0;
+                border-radius: 0;
+            }
+            .header-brand h1 {
+                font-size: 1.5rem;
+                padding: 0;
+                text-align: left;
+                flex-grow: 1;
+            }
+
+            /* Hamburger Menu Logic */
+            .menu-icon {
+                display: block; /* Show hamburger icon */
+            }
+            
+            .navbar {
+                display: none; /* Hide navigation by default */
+                flex-direction: column;
+                position: absolute;
+                top: 60px; /* Below header */
+                left: 0;
+                right: 0;
+                background-color: var(--kfc-dark);
+                z-index: 100;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                padding: 10px 0;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .navbar.active {
+                display: flex; /* Show navigation when toggled */
+            }
+            .navbar a {
+                margin: 5px 15px;
+                padding: 12px;
+                font-size: 1.1rem;
+                text-align: left;
+            }
+            
+            /* Forms stack inputs vertically */
+            .section-form {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .form-group, .form-group.search-input {
+                flex: 1 1 100%; /* Ensure all form groups take full width */
+            }
+            .section-form button {
+                align-self: stretch;
+                margin-top: 10px;
+            }
+
+            /* Responsive Header & Button Grouping (Stacking on Mobile) */
+            .header-with-button {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 10px;
+            }
+            .header-with-button h2 {
+                width: 100%;
+                border-bottom: 2px solid var(--kfc-red-light); /* Re-add border to h2 on mobile */
+                padding-bottom: 8px;
+                margin-bottom: 10px;
+            }
+            .header-with-button button {
+                width: 100%;
+                margin-top: 5px;
+                margin-bottom: 15px; /* Add margin below button before next element */
+            }
+            
+            /* Tables scrollable horizontally on small screens */
+            .history-table-container, .table-responsive-container {
+                overflow-x: auto;
+            }
+            #productListTable, #stockHistoryTable {
+                min-width: 600px; /* Ensure content is readable */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER AND LOGO (KFC Branding) -->
+        <div class="header-brand">
+            <!-- Three-line Menu Icon (Hamburger) -->
+            <div class="menu-icon" onclick="toggleMenu()">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            
+            <h1>KFC Inventory System</h1>
+        </div>
+        <p class="note" style="text-align: center; margin-top: -10px;">Digital Stock Control & History Log</p>
+
+        <!-- Navigation Bar (Toggled by Menu Icon on Mobile) -->
+        <div class="navbar" id="main-navbar">
+            <a href="#" class="nav-link active" data-view="stock-list">Current Stock</a>
+            <a href="#" class="nav-link" data-view="define-product">Define Product</a>
+            <a href="#" class="nav-link" data-view="increase-stock">Record Addition</a>
+            <a href="#" class="nav-link" data-view="decrease-stock">Record Decrease</a>
+            <a href="#" class="nav-link" data-view="history">History</a>
+        </div>
+
+        <!-- 1. Define New Item View (Product Definition) -->
+        <div id="view-define-product" class="view">
+            <h2>1. Define New Product Type</h2>
+            <div class="section-form">
+                <div class="form-group">
+                    <label for="newProductName">Product Name:</label>
+                    <input type="text" id="newProductName" required>
+                </div>
+                <div class="form-group">
+                    <label for="newProductUnit">Base Measurement Unit:</label>
+                    <select id="newProductUnit" required>
+                        <option value="pcs">Pieces (pcs)</option>
+                        <option value="L">Liter (L)</option>
+                        <option value="ml">Milliliter (ml)</option>
+                        <option value="kg">Kilogram (kg)</option>
+                        <option value="g">Gram (g)</option>
+                        <option value="pkt">Packet (pkt)</option>
+                        <option value="case">Case (case)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="newProductType">Product Type:</label>
+                    <select id="newProductType" required>
+                        <option value="Dry Store">Dry Store</option>
+                        <option value="Store Product">Store Product</option>
+                    </select>
+                </div>
+                <!-- Initial Stock field removed. Stock starts at 0, must be added via 'Record Addition' -->
+                <button class="btn-add" onclick="addNewProduct()">Define Product Type</button>
+            </div>
+            <p class="note">New products are added with 0 stock. Use the 'Record Addition' tab to add physical inventory.</p>
+        </div>
+
+        <!-- 2. Current Stock List View (Default) -->
+        <div id="view-stock-list" class="view active">
+            <div class="header-with-button">
+                <h2>2. Current Product List & Total Balance Stock</h2>
+                <button class="btn-download" onclick="downloadCurrentStock()">Download Current Stock</button>
+            </div>
+            <div class="table-responsive-container">
+                <table id="productListTable">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Product Name</th>
+                            <th>Product Type</th>
+                            <th>Total Balance Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Product rows will be inserted here by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. Stock Update/Increase View -->
+        <div id="view-increase-stock" class="view">
+            <h2>3. Record Stock Addition (Shipments Received)</h2>
+            <div class="section-form">
+                <div class="form-group">
+                    <label for="entryDateAddition">Date:</label>
+                    <input type="date" id="entryDateAddition" required>
+                </div>
+                
+                <!-- SEARCH BAR (Addition) - Now using class for responsiveness -->
+                <div class="form-group search-input">
+                    <label for="productSearchAddition">Search Product:</label>
+                    <input type="text" id="productSearchAddition" placeholder="Type name or ID to filter..." oninput="filterProductDropdown('addition')">
+                </div>
+                
+                <div class="form-group">
+                    <label for="entryProductAddition">Product:</label>
+                    <select id="entryProductAddition" required onchange="showProductDetails('addition')">
+                        <!-- Options populated by JS -->
+                    </select>
+                    <!-- Current Stock Display -->
+                    <div class="product-details">
+                        Balance: <span id="currentStockDisplayAddition">---</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="entryStockAddition">Quantity Received (<span id="additionUnitDisplay">---</span>):</label>
+                    <input type="number" id="entryStockAddition" min="0" required step="0.01"> 
+                </div>
+                <button class="btn-primary" onclick="recordStockAddition()">Add Stock & Record</button>
+            </div>
+            <p>✅ **Update Logic:** The value entered in 'Quantity Received' will be **added** to the 'Total Balance Stock'.</p>
+        </div>
+
+
+        <!-- 4. Stock Update/Decrease View -->
+        <div id="view-decrease-stock" class="view">
+            <h2>4. Record Stock Decrease (Items Sold/Lost)</h2>
+            <div class="section-form">
+                <div class="form-group">
+                    <label for="entryDateDecrease">Date:</label>
+                    <input type="date" id="entryDateDecrease" required>
+                </div>
+                
+                <!-- SEARCH BAR (Decrease) - Now using class for responsiveness -->
+                <div class="form-group search-input">
+                    <label for="productSearchDecrease">Search Product:</label>
+                    <input type="text" id="productSearchDecrease" placeholder="Type name or ID to filter..." oninput="filterProductDropdown('decrease')">
+                </div>
+                
+                <div class="form-group">
+                    <label for="entryProductDecrease">Product:</label>
+                    <select id="entryProductDecrease" required onchange="showProductDetails('decrease')">
+                        <!-- Options populated by JS -->
+                    </select>
+                    <!-- Current Stock Display -->
+                    <div class="product-details">
+                        Balance: <span id="currentStockDisplayDecrease">---</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <!-- UPDATED LABEL to include dynamic unit display -->
+                    <label for="entryStockDecrease">Quantity Sold/Decreased (<span id="decreaseUnitDisplay">---</span>):</label>
+                    <input type="number" id="entryStockDecrease" min="0" required step="0.01"> 
+                </div>
+                <button class="btn-update" onclick="updateStockDecrease()">Subtract Stock & Record</button>
+            </div>
+            <p>⚠️ **Update Logic:** The value entered in 'Quantity Sold/Decreased' will be **subtracted** from the 'Total Balance Stock', and the remaining stock will be recorded as the new balance.</p>
+        </div>
+
+        <!-- 5. History View -->
+        <div id="view-history" class="view">
+            <div class="header-with-button">
+                <h2>5. Daily Stock Balance History</h2>
+                <button class="btn-download" onclick="downloadHistory()">Download Filtered History</button>
+            </div>
+            
+            <!-- History Filtering and Download Controls -->
+            <div class="section-form">
+                <div class="form-group">
+                    <label for="historyStartDate">Start Date:</label>
+                    <input type="date" id="historyStartDate" onchange="displayStockHistory()">
+                </div>
+                <div class="form-group">
+                    <label for="historyEndDate">End Date:</label>
+                    <input type="date" id="historyEndDate" onchange="displayStockHistory()">
+                </div>
+                <div class="form-group">
+                    <label for="historyTypeFilter">Transaction Type:</label>
+                    <select id="historyTypeFilter" onchange="displayStockHistory()">
+                        <option value="all">All Transactions</option>
+                        <option value="addition">Record Addition (+)</option>
+                        <option value="decrease">Record Decrease (-)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="history-table-container">
+                <table id="stockHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Product Name</th>
+                            <th>Recorded Final Count</th>
+                            <th>Stock Change (Add/Subtract)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- History rows will be inserted here by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for the Inventory Tracker with Local Storage (Client-side Database)
+        
+        // --- MOBILE MENU TOGGLE FUNCTION ---
+        function toggleMenu() {
+            const navbar = document.getElementById('main-navbar');
+            navbar.classList.toggle('active');
+        }
+
+        // Initial Data Structure (will be overwritten by localStorage if data exists)
+        let products = [
+            { id: 'P101', name: 'Chicken Breast (Frozen)', totalStock: 200, unit: 'kg', type: 'Store Product' },
+            { id: 'P102', name: 'Chicken Thighs (Frozen)', totalStock: 150, unit: 'kg', type: 'Store Product' },
+            { id: 'P103', name: 'Original Recipe Coating', totalStock: 120, unit: 'kg', type: 'Dry Store' },
+            { id: 'P104', name: 'Zinger Powder Mix', totalStock: 75, unit: 'pkt', type: 'Dry Store' },
+            { id: 'P105', name: 'Regular Fries (Frozen Bag)', totalStock: 400, unit: 'kg', type: 'Store Product' },
+            { id: 'P106', name: 'Pepsi Syrup Concentrate', totalStock: 100, unit: 'L', type: 'Dry Store' },
+            { id: 'P107', name: 'Colonel\'s Gravy Mix', totalStock: 50, unit: 'pkt', type: 'Dry Store' },
+            { id: 'P108', name: 'Salad Oil (Frying)', totalStock: 180, unit: 'L', type: 'Store Product' },
+            { id: 'P109', name: 'Burger Buns (Large)', totalStock: 600, unit: 'pcs', type: 'Dry Store' },
+            { id: 'P110', name: 'Lettuce Mix', totalStock: 40, unit: 'kg', type: 'Store Product' },
+            { id: 'P111', name: 'Ketchup Sachets', totalStock: 1000, unit: 'pcs', type: 'Dry Store' }
+        ];
+        let stockHistory = [];
+        let productIdCounter = 111; // Updated counter to reflect the new list size
+        
+        const PRODUCT_STORAGE_KEY = 'shopInventoryProducts';
+        const HISTORY_STORAGE_KEY = 'shopInventoryHistory';
+        const COUNTER_STORAGE_KEY = 'shopInventoryCounter';
+
+        // Helper function to safely round float numbers to 2 decimal places to prevent JS floating point errors
+        function roundToTwoDecimals(num) {
+            return Math.round(num * 100) / 100;
+        }
+
+        // --- Database (Local Storage) Functions ---
+
+        function saveData() {
+            try {
+                localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(products));
+                localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(stockHistory));
+                localStorage.setItem(COUNTER_STORAGE_KEY, productIdCounter.toString());
+            } catch (error) {
+                console.error("Could not save data to Local Storage:", error);
+            }
+        }
+
+        function loadData() {
+            try {
+                const savedProducts = localStorage.getItem(PRODUCT_STORAGE_KEY);
+                const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+                const savedCounter = localStorage.getItem(COUNTER_STORAGE_KEY);
+
+                if (savedProducts) {
+                    products = JSON.parse(savedProducts);
+                    // Ensure all stock values are treated as floats upon load
+                    products.forEach(p => {
+                        p.totalStock = parseFloat(p.totalStock || 0);
+                        if (!p.unit) p.unit = 'pcs'; 
+                        if (!p.type) p.type = 'Dry Store'; 
+                    });
+                }
+                if (savedHistory) {
+                    stockHistory = JSON.parse(savedHistory);
+                    // Ensure historical counts are treated as floats upon load
+                    stockHistory.forEach(h => {
+                        h.finalCount = parseFloat(h.finalCount || 0);
+                        h.stockDifference = parseFloat(h.stockDifference || 0);
+                    });
+                }
+                if (savedCounter) {
+                    productIdCounter = parseInt(savedCounter, 10);
+                }
+            } catch (error) {
+                console.error("Could not load data from Local Storage:", error);
+            }
+        }
+
+        // --- View Navigation Logic ---
+
+        function showView(viewId) {
+            // Hide mobile menu on navigation click
+            const navbar = document.getElementById('main-navbar');
+            if (navbar.classList.contains('active')) {
+                 navbar.classList.remove('active');
+            }
+
+            // Hide all views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+
+            // Deactivate all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Show the target view
+            const targetView = document.getElementById(`view-${viewId}`);
+            if (targetView) {
+                targetView.classList.add('active');
+                
+                // Activate the corresponding nav link
+                document.querySelector(`.nav-link[data-view="${viewId}"]`).classList.add('active');
+
+                // Special refresh logic for pages with dropdowns
+                if (viewId === 'decrease-stock' || viewId === 'increase-stock') {
+                    const type = viewId === 'increase-stock' ? 'addition' : 'decrease';
+
+                    // Reset search bar content when entering this view
+                    const searchBar = document.getElementById(`productSearch${type === 'addition' ? 'Addition' : 'Decrease'}`);
+                    if (searchBar) searchBar.value = ''; 
+                    
+                    // Repopulate the dropdown and show details when the view is shown
+                    populateProductDropdown(type); // Will populate with no filter
+                    showProductDetails(type);
+                } else if (viewId === 'stock-list') {
+                    populateProductList();
+                } else if (viewId === 'history') {
+                    // Update: Call displayStockHistory to apply current filters immediately
+                    displayStockHistory();
+                }
+            }
+        }
+
+        // Add event listeners to navigation links
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const viewId = link.getAttribute('data-view');
+                    showView(viewId);
+                });
+            });
+        });
+
+        // --- Core Helper Functions ---
+
+        function getProductById(id) {
+            return products.find(p => p.id === id);
+        }
+
+        // --- 1. Add New Item Function (Product Definition) ---
+        function addNewProduct() {
+            const nameInput = document.getElementById('newProductName');
+            const unitSelect = document.getElementById('newProductUnit');
+            const typeSelect = document.getElementById('newProductType'); 
+            
+            const name = nameInput.value.trim();
+            const unit = unitSelect.value;
+            const type = typeSelect.value; 
+
+            if (name === "") {
+                console.error('Validation Error: Please enter a valid product name.');
+                return;
+            }
+
+            productIdCounter++;
+            const newProduct = {
+                id: 'P' + productIdCounter,
+                name: name,
+                totalStock: 0, // Starts at zero, must be added via 'Record Addition'
+                unit: unit,
+                type: type 
+            };
+
+            products.push(newProduct);
+            
+            // Clear form and save/refresh tables
+            nameInput.value = '';
+            unitSelect.value = 'pcs'; 
+            typeSelect.value = 'Dry Store'; 
+            
+            saveData();
+            
+            // Navigate back to the stock list after defining an item
+            showView('stock-list');
+        }
+
+
+        // --- 2. Display Functions ---
+
+        function populateProductList() {
+            const tableBody = document.querySelector('#productListTable tbody');
+            tableBody.innerHTML = ''; 
+            products.forEach(product => {
+                const row = tableBody.insertRow();
+                row.insertCell().textContent = product.id;
+                row.insertCell().textContent = product.name;
+                row.insertCell().textContent = product.type; 
+                const stockCell = row.insertCell();
+                // Display stock formatted to 2 decimals
+                const formattedStock = product.totalStock.toFixed(2); 
+                stockCell.innerHTML = `<strong>${formattedStock} ${product.unit}</strong>`; 
+            });
+        }
+
+        // --- New Function: Filters the list based on search input ---
+        function filterProductDropdown(type) {
+            const searchId = type === 'addition' ? 'productSearchAddition' : 'productSearchDecrease';
+            const searchTerm = document.getElementById(searchId).value.toLowerCase();
+            populateProductDropdown(type, searchTerm);
+        }
+
+
+        // --- Modified: Populates dropdown and handles filtering ---
+        function populateProductDropdown(type, searchTerm = '') {
+            const selectId = type === 'addition' ? 'entryProductAddition' : 'entryProductDecrease';
+            const select = document.getElementById(selectId);
+
+            // Store the current selection to prevent resetting when populating
+            const currentProductId = select.value; 
+
+            // Filter the products based on the search term
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.id.toLowerCase().includes(searchTerm)
+            );
+
+            select.innerHTML = '<option value="">-- Select Product --</option>';
+            filteredProducts.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.textContent = `${product.name} (${product.unit}) - ${product.type}`; 
+                select.appendChild(option);
+            });
+
+            // Restoration logic
+            if (currentProductId && filteredProducts.some(p => p.id === currentProductId)) {
+                 select.value = currentProductId;
+            } else {
+                 // If the selected item is filtered out, clear the selection
+                 select.value = '';
+            }
+            
+            // Ensure details are updated
+            showProductDetails(type);
+        }
+        
+        // --- Modified: Handles showing details and clearing search bar after selection ---
+        function showProductDetails(type) {
+            const productId = type === 'addition' ? document.getElementById('entryProductAddition').value : document.getElementById('entryProductDecrease').value;
+            
+            const unitDisplayId = type === 'addition' ? 'additionUnitDisplay' : 'decreaseUnitDisplay';
+            const stockDisplayId = type === 'addition' ? 'currentStockDisplayAddition' : 'currentStockDisplayDecrease';
+            const searchId = type === 'addition' ? 'productSearchAddition' : 'productSearchDecrease';
+
+            const unitDisplay = document.getElementById(unitDisplayId); 
+            const currentStockDisplay = document.getElementById(stockDisplayId);
+            const searchBar = document.getElementById(searchId);
+
+            if (productId) {
+                const product = getProductById(productId);
+                if (product) {
+                    
+                    // --- Display Current Stock ---
+                    currentStockDisplay.textContent = `${product.totalStock.toFixed(2)} ${product.unit}`;
+                    unitDisplay.textContent = product.unit;
+                    
+                    // --- LOGIC TO CLEAR SEARCH AFTER SELECTION ---
+                    if (searchBar && searchBar.value !== '') {
+                        searchBar.value = ''; // Clear search bar
+                        // Repopulate dropdown without filter to show all options again, while keeping the current item selected
+                        populateProductDropdown(type, ''); 
+                    }
+                }
+            } else {
+                currentStockDisplay.textContent = '---'; // Clear on no selection
+                unitDisplay.textContent = '---';
+            }
+        }
+
+
+        // --- UPDATED: Applies filters before displaying the history table ---
+        function displayStockHistory() {
+            const startDateStr = document.getElementById('historyStartDate').value;
+            const endDateStr = document.getElementById('historyEndDate').value;
+            const typeFilter = document.getElementById('historyTypeFilter').value;
+
+            // Date objects for comparison
+            const startDate = startDateStr ? new Date(startDateStr) : null;
+            const endDate = endDateStr ? new Date(endDateStr) : null;
+            
+            // Adjust end date to include the whole day
+            if (endDate) endDate.setDate(endDate.getDate() + 1);
+
+            let filteredHistory = stockHistory.filter(entry => {
+                const entryDate = new Date(entry.date);
+                let passDate = true;
+                let passType = true;
+
+                // 1. Filter by Date Range
+                if (startDate && entryDate < startDate) {
+                    passDate = false;
+                }
+                if (endDate && entryDate >= endDate) {
+                    passDate = false;
+                }
+
+                // 2. Filter by Transaction Type
+                if (typeFilter === 'addition') {
+                    if (entry.stockDifference <= 0) passType = false;
+                } else if (typeFilter === 'decrease') {
+                    if (entry.stockDifference >= 0) passType = false;
+                }
+                
+                return passDate && passType;
+            });
+
+            const tableBody = document.querySelector('#stockHistoryTable tbody');
+            tableBody.innerHTML = '';
+
+            // Sort filtered history by date (newest first)
+            const sortedHistory = [...filteredHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedHistory.forEach(entry => {
+                const row = tableBody.insertRow();
+                const product = getProductById(entry.productId);
+                const unit = product ? product.unit : 'pcs';
+
+                // Format numbers for display
+                const formattedFinalCount = entry.finalCount.toFixed(2);
+                const formattedDifference = Math.abs(entry.stockDifference).toFixed(2);
+
+                row.insertCell().textContent = entry.date;
+                row.insertCell().textContent = entry.productName;
+                
+                // Show final count with unit
+                const finalCountCell = row.insertCell();
+                finalCountCell.textContent = `${formattedFinalCount} ${unit}`;
+                
+                const differenceCell = row.insertCell();
+                
+                if (entry.stockDifference < 0) {
+                    differenceCell.textContent = `-${formattedDifference} ${unit}`; 
+                    differenceCell.style.color = '#e74c3c'; // Red for decrease
+                } else if (entry.stockDifference > 0) {
+                    differenceCell.textContent = `+${formattedDifference} ${unit}`; 
+                    differenceCell.style.color = '#2ecc71'; // Green for increase
+                } else {
+                    differenceCell.textContent = '0.00';
+                }
+                differenceCell.style.fontWeight = 'bold';
+            });
+            
+            // Display a message if no records match the filter
+            if (sortedHistory.length === 0) {
+                const row = tableBody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 4;
+                cell.textContent = "No history records match the current filter criteria.";
+                cell.style.textAlign = 'center';
+                cell.style.fontStyle = 'italic';
+            }
+        }
+        
+        // --- CSV DOWNLOAD UTILITY FUNCTION ---
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) { 
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // --- DOWNLOAD CURRENT STOCK ---
+        function downloadCurrentStock() {
+            if (products.length === 0) {
+                console.error("No products available to download.");
+                return;
+            }
+
+            const header = ['Product ID', 'Product Name', 'Product Type', 'Total Balance Stock', 'Unit'];
+            const rows = products.map(p => [
+                p.id,
+                p.name,
+                p.type,
+                p.totalStock.toFixed(2),
+                p.unit
+            ]);
+
+            const csvContent = [
+                header.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+
+            const date = new Date().toISOString().split('T')[0];
+            downloadCSV(csvContent, `KFC_Current_Stock_Balance_${date}.csv`);
+        }
+
+        // --- DOWNLOAD HISTORY (WITH FILTERS) ---
+        function downloadHistory() {
+            const startDateStr = document.getElementById('historyStartDate').value;
+            const endDateStr = document.getElementById('historyEndDate').value;
+            const typeFilter = document.getElementById('historyTypeFilter').value;
+
+            // Date objects for comparison
+            const startDate = startDateStr ? new Date(startDateStr) : null;
+            const endDate = endDateStr ? new Date(endDateStr) : null;
+            
+            // Adjust end date to include the whole day
+            if (endDate) endDate.setDate(endDate.getDate() + 1);
+
+
+            let filteredHistory = stockHistory.filter(entry => {
+                const entryDate = new Date(entry.date);
+                let passDate = true;
+                let passType = true;
+
+                // 1. Filter by Date Range
+                if (startDate && entryDate < startDate) {
+                    passDate = false;
+                }
+                if (endDate && entryDate >= endDate) {
+                    passDate = false;
+                }
+
+                // 2. Filter by Transaction Type
+                if (typeFilter === 'addition') {
+                    if (entry.stockDifference <= 0) passType = false;
+                } else if (typeFilter === 'decrease') {
+                    if (entry.stockDifference >= 0) passType = false;
+                }
+                
+                return passDate && passType;
+            });
+
+            if (filteredHistory.length === 0) {
+                console.error("No history records match the current filters.");
+                return;
+            }
+            
+            const header = ['Date', 'Product ID', 'Product Name', 'Transaction Type', 'Stock Change', 'Final Count', 'Unit'];
+            const rows = filteredHistory.map(entry => {
+                const product = getProductById(entry.productId);
+                const unit = product ? product.unit : 'pcs';
+                const type = entry.stockDifference > 0 ? 'ADDITION' : (entry.stockDifference < 0 ? 'DECREASE' : 'NO CHANGE');
+                const changeAmount = Math.abs(entry.stockDifference).toFixed(2);
+                const finalCount = entry.finalCount.toFixed(2);
+                
+                return [
+                    entry.date,
+                    entry.productId,
+                    entry.productName,
+                    type,
+                    changeAmount,
+                    finalCount,
+                    unit
+                ];
+            });
+
+            const csvContent = [
+                header.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+
+            const date = new Date().toISOString().split('T')[0];
+            downloadCSV(csvContent, `KFC_Filtered_Stock_History_${date}.csv`);
+        }
+
+        // --- 3. Record Stock Addition Function ---
+
+        function recordStockAddition() {
+            const date = document.getElementById('entryDateAddition').value;
+            const productId = document.getElementById('entryProductAddition').value;
+            const increaseAmount = parseFloat(document.getElementById('entryStockAddition').value); 
+
+            if (!date || !productId || isNaN(increaseAmount) || increaseAmount <= 0) {
+                 console.error('Validation Error: Please ensure Date, Product, and a valid positive amount (including .00 values) are entered.');
+                return;
+            }
+
+            const product = getProductById(productId);
+            if (!product) {
+                console.error('Error: Product not found.');
+                return;
+            }
+
+            const oldTotal = product.totalStock;
+            const newTotal = roundToTwoDecimals(oldTotal + increaseAmount);
+            const stockDifference = roundToTwoDecimals(increaseAmount); 
+
+            // 1. Record the daily activity (Positive difference)
+            stockHistory.push({
+                date: date,
+                productId: productId,
+                productName: product.name,
+                finalCount: newTotal, 
+                stockDifference: stockDifference
+            });
+
+            // 2. Update the Total Stock
+            product.totalStock = newTotal;
+            
+            // 3. Save to Local Storage
+            saveData();
+            
+            // 4. Refresh all displays
+            document.getElementById('entryStockAddition').value = ''; 
+
+            // Navigate back to the stock list after recording the addition
+            showView('stock-list'); 
+
+            // Provide feedback on the change
+            console.log(`Stock Added: ${product.name} increased by ${increaseAmount.toFixed(2)} ${product.unit}. New Total: ${newTotal.toFixed(2)}.`);
+        }
+
+
+        // --- 4. Record Stock Decrease Function ---
+
+        function updateStockDecrease() {
+            const date = document.getElementById('entryDateDecrease').value;
+            const productId = document.getElementById('entryProductDecrease').value;
+            const decreaseAmount = parseFloat(document.getElementById('entryStockDecrease').value); 
+
+            if (!date || !productId || isNaN(decreaseAmount) || decreaseAmount <= 0) {
+                 console.error('Validation Error: Please ensure Date, Product, and a valid positive decrease amount (including .00 values) are entered.');
+                return;
+            }
+
+            const product = getProductById(productId);
+
+            if (!product) {
+                console.error('Error: Product not found.');
+                return;
+            }
+
+            const oldTotal = product.totalStock;
+            const newTotal = roundToTwoDecimals(oldTotal - decreaseAmount);
+            
+            // Validation: Prevent stock from going negative
+            if (newTotal < -0.01) { 
+                console.error(`Error: Cannot decrease stock by ${decreaseAmount.toFixed(2)}. Only ${oldTotal.toFixed(2)} ${product.unit} remain. Operation cancelled.`);
+                return;
+            }
+
+            const finalNewTotal = Math.max(0, newTotal);
+            const stockDifference = roundToTwoDecimals(finalNewTotal - oldTotal); // This will be negative
+
+            // 1. Record the daily activity (Negative difference)
+            stockHistory.push({
+                date: date,
+                productId: productId,
+                productName: product.name,
+                finalCount: finalNewTotal, 
+                stockDifference: stockDifference
+            });
+
+            // 2. Update the Total Stock
+            product.totalStock = finalNewTotal;
+            
+            // 3. Save to Local Storage
+            saveData();
+            
+            // 4. Refresh all displays
+            document.getElementById('entryStockDecrease').value = ''; 
+
+            // Navigate back to the stock list after recording the decrease
+            showView('stock-list'); 
+
+            // Provide feedback on the change
+            console.log(`Stock Decreased: ${product.name} decreased by ${decreaseAmount.toFixed(2)} ${product.unit}. New Total: ${finalNewTotal.toFixed(2)}.`);
+        }
+
+
+        // Initialize the page on load
+        window.onload = function() {
+            // Load data from Local Storage
+            loadData();
+            
+            // Set today's date as default on all date fields
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entryDateDecrease').value = today;
+            document.getElementById('entryDateAddition').value = today;
+            
+            // Display loaded data (initial call)
+            populateProductList();
+            
+            // Show the default view
+            showView('stock-list');
+        };
+
+    </script>
+</body>
+</html>
